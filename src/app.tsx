@@ -39,10 +39,20 @@ export default function App(): JSX.Element {
             <span>10:28</span>
           </div>
           {state === States.Player && (
-            <Button onClick={onMixerClick} icon={<MixerIco />} title="Mixer" />
+            <Button
+              className="mixer-ico"
+              onClick={onMixerClick}
+              icon={<MixerIco />}
+              title="Mixer"
+            />
           )}
           {state === States.Mixer && (
-            <Button onClick={onPlayerClick} icon={<PlayIco />} title="Player" />
+            <Button
+              className="player-ico"
+              onClick={onPlayerClick}
+              icon={<PlayIco />}
+              title="Player"
+            />
           )}
           <div className="stats stats_tracks">
             <span>Tracks</span>
@@ -81,5 +91,10 @@ const StyledPage = styled.div`
     & > span {
       margin-right: 7px;
     }
+  }
+
+  .player-ico path,
+  .mixer-ico path {
+    fill: ${({ theme }) => theme.text};
   }
 `
