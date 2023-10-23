@@ -1,19 +1,35 @@
 import classNames from 'classnames'
-import React, { FC, PropsWithChildren, ReactNode } from 'react'
+import React, {
+  FC,
+  PropsWithChildren,
+  ReactNode,
+  useCallback,
+  useState,
+} from 'react'
 import styled from 'styled-components'
 
 interface Props {
+  active: boolean
   className?: string
-  onClick: Function
+  OnClick: Function
   title: string
   icon?: ReactNode
 }
 
 const Button = (props: PropsWithChildren<Props>): JSX.Element => {
+  const [isActive, setActive] = useState<boolean>(props.active)
+
+  const onClick = useCallback((e: any) => {
+    setActive(isActive => !isActive)
+  }, [])
+
   return (
     <StyledButton
-      className={classNames(props.className, 'button')}
-      onClick={e => props.onClick(e)}
+      className={classNames(props.className, 'button', { active: isActive })}
+      onClick={e => {
+        props.OnClick(e)
+        onClick(e)
+      }}
     >
       <div className="button_title">{props.title}</div>
       {props.icon && <div className="button_icon">{props.icon}</div>}
@@ -33,6 +49,11 @@ const StyledButton = styled.div`
   justify-content: center;
   flex-direction: column;
   width: fit-content;
+  color: ${({ theme }) => theme.disabled};
+
+  &.active {
+    color: ${({ theme }) => theme.text};
+  }
 
   .button_title {
     text-transform: uppercase;

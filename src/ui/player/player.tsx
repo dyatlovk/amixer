@@ -10,13 +10,10 @@ interface Props {
 
 const Player = (props: Props): JSX.Element => {
   const onMuteClick = useCallback((e: any) => {}, [])
-  const onMixerClick = useCallback((e: any) => {
-    if (props.onMixerClick) props.onMixerClick(e)
-  }, [])
 
   return (
     <StyledPlayer className="player">
-      <Button onClick={onMuteClick} title="Mute" />
+      <Button active={false} OnClick={onMuteClick} title="Mute" />
       <Level unitSize={4} gap={2} count={52} progress={15} />
       <KnobAlt label="Vol" min={0} max={100} value={10} split={false} />
     </StyledPlayer>

@@ -41,7 +41,8 @@ export default function App(): JSX.Element {
           {state === States.Player && (
             <Button
               className="mixer-ico"
-              onClick={onMixerClick}
+              active={true}
+              OnClick={onMixerClick}
               icon={<MixerIco />}
               title="Mixer"
             />
@@ -49,7 +50,8 @@ export default function App(): JSX.Element {
           {state === States.Mixer && (
             <Button
               className="player-ico"
-              onClick={onPlayerClick}
+              active={true}
+              OnClick={onPlayerClick}
               icon={<PlayIco />}
               title="Player"
             />
