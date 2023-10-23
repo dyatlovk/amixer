@@ -7,7 +7,8 @@ import Player from 'App/ui/player/player'
 import Button from 'App/ui/button'
 import { MixerIco } from 'App/ui/icons/mixer'
 import Mixer from 'App/ui/mixer/mixer'
-import { PlayIco } from './ui/icons/play'
+import { PlayIco } from 'App/ui/icons/play'
+import Modal from 'App/ui/modal'
 
 enum States {
   Player = 0,
@@ -30,8 +31,10 @@ export default function App(): JSX.Element {
       <GlobalStyles />
       <StyledPage className="app">
         <section className="workspaceSection">
-          {state === States.Player && <Player />}
-          {state === States.Mixer && <Mixer />}
+          <Player />
+          <Modal visible={state === States.Mixer}>
+            <Mixer />
+          </Modal>
         </section>
         <section className="footerSection">
           <div className="stats stats_time">
@@ -76,6 +79,7 @@ const StyledPage = styled.div`
   .workspaceSection {
     flex-grow: 1;
     overflow-y: auto;
+    position: relative;
   }
 
   .footerSection {
