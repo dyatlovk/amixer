@@ -10,7 +10,7 @@ interface Props {
   split: boolean
 }
 
-const KnobAlt = (props: Props): JSX.Element => {
+const Knob = (props: Props): JSX.Element => {
   let el: HTMLDivElement | null = null
 
   useEffect(() => {
@@ -64,4 +64,4 @@ const StyledKnob = styled.div`
     stroke: ${({ theme }) => theme.accent};
   }
 `
-export default KnobAlt
+export default Knob

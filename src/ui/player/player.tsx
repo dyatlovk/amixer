@@ -2,7 +2,7 @@ import React, { useCallback } from 'react'
 import styled from 'styled-components'
 import Level from 'App/ui/level'
 import Button from 'App/ui/button'
-import KnobAlt from 'App/ui/knob_alt'
+import Knob from 'App/ui/knob'
 
 interface Props {
   onMixerClick?: Function
@@ -15,7 +15,7 @@ const Player = (props: Props): JSX.Element => {
     <StyledPlayer className="player">
       <Button active={false} OnClick={onMuteClick} title="Mute" />
       <Level unitSize={4} gap={2} count={52} progress={15} />
-      <KnobAlt label="Vol" min={0} max={100} value={10} split={false} />
+      <Knob label="Vol" min={0} max={100} value={10} split={false} />
     </StyledPlayer>
   )
 }

@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import { PlayIco } from 'App/ui/icons/play'
 import { InfinityIcon } from 'App/ui/icons/infinity'
 import { StopIcon } from 'App/ui/icons/stop'
-import KnobAlt from 'App/ui/knob_alt'
+import Knob from 'App/ui/knob'
 import { useWindowSize } from 'App/hooks/useWindowSize'
 import TrackButton from './track_btn'
 
@@ -45,10 +45,10 @@ export default function Track(props: Props): JSX.Element {
       </div>
       <div className="track-right track-group">
         <div className="pan">
-          <KnobAlt label="Pan" min={-50} max={50} value={20} split={true} />
+          <Knob label="Pan" min={-50} max={50} value={20} split={true} />
         </div>
         <div className="vol">
-          <KnobAlt label="Vol" min={0} max={100} value={70} split={false} />
+          <Knob label="Vol" min={0} max={100} value={70} split={false} />
         </div>
       </div>
     </StyledTrack>
