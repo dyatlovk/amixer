@@ -13,7 +13,7 @@ export const dark = {
   text: '#a2b1be',
   accent: '#BDBDBD',
   disabled: '#36393d',
-  hover: '#36393d',
+  hover: '#a2b1be',
   border: '#36393d',
   icon: '#e6edf3',
 }

@@ -25,6 +25,3 @@ const Mixer = (props: Props): JSX.Element => {
 }
 
 export default Mixer
-function useState<T>(arg0: number): [any, any] {
-  throw new Error('Function not implemented.')
-}

@@ -1,10 +1,11 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import styled from 'styled-components'
 import { PlayIco } from 'App/ui/icons/play'
 import { InfinityIcon } from 'App/ui/icons/infinity'
 import { StopIcon } from 'App/ui/icons/stop'
 import KnobAlt from 'App/ui/knob_alt'
 import { useWindowSize } from 'App/hooks/useWindowSize'
+import TrackButton from './track_btn'
 
 interface Props {
   url: string
@@ -20,26 +21,25 @@ export default function Track(props: Props): JSX.Element {
       <div className="track-left track-group">
         <div className="title track-title">{props.title}</div>
         <div className="track-control">
-          <div className="mute track-button">{props.nu}</div>
-          <div className="play track-button">
+          <TrackButton className="track_mute">{props.nu}</TrackButton>
+          <TrackButton className="track_play">
             <PlayIco />
-          </div>
-          <div className="stop track-button">
+          </TrackButton>
+          <TrackButton className="track_stop">
             <StopIcon />
-          </div>
-          <div className="loop track-button">
+          </TrackButton>
+          <TrackButton className="track_loop">
             <InfinityIcon />
-          </div>
-          <div className="track_time">
+          </TrackButton>
+          <TrackButton className="track_time">
             <span>Time</span>
             <span>01:18</span>
-          </div>
-
+          </TrackButton>
           {ws.width > 0 && ws.width >= 430 && (
-            <div className="track_time">
+            <TrackButton className="track_time">
               <span>Total</span>
-              <span>10:29</span>
-            </div>
+              <span>01:18</span>
+            </TrackButton>
           )}
         </div>
       </div>
@@ -87,26 +87,12 @@ const StyledTrack = styled.div`
     padding-right: 15px;
   }
 
-  .track-button {
-    width: 50px;
-    height: 41px;
-    display: flex;
-    align-content: center;
-    align-items: center;
-    justify-content: center;
-  }
-
   .track_time {
     flex-direction: column;
-    text-align: center;
-    text-transform: uppercase;
-    width: 50px;
-    height: 41px;
     display: inline-flex;
-    justify-content: center;
   }
 
-  .mute {
+  .track_mute {
     font-size: 12px;
   }
 `

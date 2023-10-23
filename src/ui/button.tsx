@@ -44,7 +44,6 @@ const StyledButton = styled.div`
   }
 
   &:hover {
-    background-color: ${({ theme }) => theme.hover};
   }
 `
 
