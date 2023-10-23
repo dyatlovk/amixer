@@ -4,19 +4,29 @@ import styled from 'styled-components'
 
 interface Props {
   className?: string
+  active?: boolean
+  OnClick?: Function
+  name: string
 }
 
 const TrackButton = (props: PropsWithChildren<Props>): JSX.Element => {
-  const [isActive, setActive] = useState<boolean>(false)
+  const [isActive, setActive] = useState<boolean>(
+    props.active ? props.active : false
+  )
 
-  const onTrackButton = useCallback((e: any) => {
-    setActive(isActive => !isActive)
-  }, [])
+  const onTrackButton = useCallback(
+    (e: any) => {
+      // setActive(isActive => !isActive)
+      if (props.OnClick) props.OnClick(e)
+    },
+    [isActive]
+  )
 
   return (
     <StyledButton
+      data-name={props.name}
       className={classNames('track_button', props.className, {
-        active: isActive,
+        active: props.active,
       })}
       onClick={onTrackButton}
     >
