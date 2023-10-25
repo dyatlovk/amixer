@@ -60,7 +60,7 @@ const StyledButton = styled.div`
   }
 
   .button_icon {
-    margin-top: 10px;
+    margin-top: 4px;
   }
 
   &:hover {

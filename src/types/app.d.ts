@@ -16,4 +16,3 @@ declare type VolumeType = strFloatRange
 declare type PanType = strFloatRangePan
 declare type KnobVolRangeType = knobVolRange
 declare type KnobPanRangeType = knobPanRange
-

@@ -266,7 +266,7 @@ export default function Track(props: Props): JSX.Element {
             OnClick={onMuteClick}
             className="track_mute"
           >
-            {props.nu}
+            <span>{props.nu}</span>
           </TrackButton>
 
           <TrackButton
@@ -385,7 +385,12 @@ const StyledTrack = styled.div`
     display: inline-flex;
   }
 
-  .track_mute {
-    font-size: 12px;
+  .track_mute span {
+    font-size: 11px;
+    display: block;
+    line-height: 1;
+    padding: 3px 5px;
+    border: 1px solid;
+    border-radius: 1px;
   }
 `
