@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import styled from 'styled-components'
 import Level from 'App/ui/level'
 import Button from 'App/ui/button'

@@ -1,6 +1,8 @@
-import React from 'react'
-import Channels from './channels'
-import Track from './track'
+import { useAppContext } from 'App/app'
+import { durationFormatter } from 'App/domain/time/time'
+import Channels from 'App/ui/mixer/channels'
+import Track from 'App/ui/mixer/track'
+import React, { useCallback, useState } from 'react'
 
 interface Props {
   className?: string
@@ -8,17 +10,63 @@ interface Props {
 }
 
 const Mixer = (props: Props): JSX.Element => {
+  const [context, setContext] = useState(useAppContext())
+
+  const onPlay = useCallback(async (e: any, id: string) => {
+    const track = context.playlist.find(id)
+    if (!track) return
+    track.play()
+  }, [])
+
+  const onPause = useCallback((e: any, id: string) => {
+    const track = context.playlist.find(id)
+    if (!track) return
+    track.pause(true)
+  }, [])
+
+  const onStop = useCallback((e: any, id: string) => {
+    const track = context.playlist.find(id)
+    if (!track) return
+    track.stop()
+  }, [])
+
+  const onMute = useCallback((e: any, id: string, state: boolean) => {
+    const track = context.playlist.find(id)
+    if (!track) return
+    const isMuted = !track.isMuted()
+    track.mute = isMuted
+  }, [])
+
+  const onLoop = useCallback((e: any, id: string, state: boolean) => {
+    const track = context.playlist.find(id)
+    if (!track) return
+    const st = track.isLooped()
+    track.loop = !st
+  }, [])
+
   return (
     <>
       <Channels className={props.className}>
-        <Track mute={true} play={true} nu={1} title="Wind" url="" pan={-20} vol={98} />
-        <Track mute={true} nu={2} url="" title="Birds" pan={10} vol={30} />
-        <Track loop={true} nu={3} url="" title="Woods" pan={0} vol={35} />
-        <Track nu={4} url="" title="Ambient" />
-        <Track nu={5} url="" title="Title" pan={10} vol={4} />
-        <Track nu={6} url="" title="Title2" pan={-90} vol={10} />
-        <Track nu={7} url="" title="Title3" pan={5} vol={71} />
-        <Track nu={8} url="" title="Title4" pan={0} vol={0} />
+        {context.playlist.getAll().map((item, i) => {
+          return (
+            <Track
+              key={i}
+              id={item.id}
+              nu={i + 1}
+              title={item.title}
+              url={item.url}
+              pan={item.pan}
+              vol={item.vol * 100}
+              play={false}
+              duration={durationFormatter(item.duration)}
+              OnPlay={onPlay}
+              OnStop={onStop}
+              OnPause={onPause}
+              OnMute={onMute}
+              OnLoop={onLoop}
+            />
+          )
+        })}
       </Channels>
     </>
   )
