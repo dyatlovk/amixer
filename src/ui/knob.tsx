@@ -8,7 +8,7 @@ interface Props {
   max: number
   value: number
   split: boolean
-  OnChange?: Function
+  OnChange?: (e: number, el: HTMLElement) => void
 }
 
 const Knob = (props: Props): JSX.Element => {
@@ -20,7 +20,7 @@ const Knob = (props: Props): JSX.Element => {
       center_zero: props.split,
       value_min: props.split ? props.min : 0.0,
       value_max: props.split ? props.max : 100.0,
-      onchange: (e: number, el: any) => {
+      onchange: (e: number, el: HTMLElement) => {
         if (props.OnChange) props.OnChange(e, el)
       },
     })

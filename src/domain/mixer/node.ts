@@ -1,6 +1,9 @@
+import { MixerAudio } from '../audio/audio_api'
+
 class TrackNode {
-  private _vol: number = 0
-  private _pan: number = 0
+  private _vol: VolumeType = '0.0'
+  private _vol_master: VolumeType = '0.0'
+  private _pan: PanType = '0.0'
   private _mute: boolean = false
   private _play: boolean = false
   private _title: string = ''
@@ -24,6 +27,7 @@ class TrackNode {
   private _start: number = 0
 
   constructor() {
+    this.ctx = new AudioContext()
     this._id = crypto.randomUUID()
   }
 
@@ -58,9 +62,9 @@ class TrackNode {
 
     this.gainNode = this.ctx.createGain()
     this.gainNode.connect(this.ctx.destination)
-    this.gainNode.gain.value = this._mute ? 0 : this._vol
+    this.gainNode.gain.value = this._mute ? 0 : Number(this._vol)
     this.stereoPanNode = this.ctx.createStereoPanner()
-    this.stereoPanNode.pan.value = this._pan
+    this.stereoPanNode.pan.value = Number(this._pan)
     trackSource
       .connect(this.gainNode)
       .connect(this.stereoPanNode)
@@ -74,7 +78,7 @@ class TrackNode {
   }
 
   public async decodeBuffer(buffer: ArrayBuffer): Promise<void> {
-    this.ctx = new AudioContext()
+    // this.ctx = new AudioContext()
     const audioBuffer: AudioBuffer = await this.ctx.decodeAudioData(buffer)
     this.audioBuffer = audioBuffer
     this._duration = audioBuffer.duration
@@ -139,23 +143,29 @@ class TrackNode {
     return this._id
   }
 
-  public set vol(val: number) {
-    if (!this.gainNode) return
-    this.gainNode.gain.value = this._mute ? 0 : val
+  public set vol(val: VolumeType) {
     this._vol = val
+    if (!this.gainNode) return
+    this.gainNode.gain.value = this._mute ? 0 : this.handleVol()
   }
 
-  public get vol(): number {
+  public get vol(): VolumeType {
     return this._vol
   }
 
-  public set pan(val: number) {
-    if (!this.stereoPanNode) return
-    this.stereoPanNode.pan.value = val
-    this._pan = val
+  public set volMaster(val: VolumeType) {
+    this._vol_master = val
+    if (!this.gainNode) return
+    this.gainNode.gain.value = this._mute ? 0 : this.handleVol()
   }
 
-  public get pan(): number {
+  public set pan(val: PanType) {
+    this._pan = val
+    if (!this.stereoPanNode) return
+    this.stereoPanNode.pan.value = Number(val)
+  }
+
+  public get pan(): PanType {
     return this._pan
   }
 
@@ -168,7 +178,7 @@ class TrackNode {
 
     if (!val) {
       if (this.gainNode) {
-        this.gainNode.gain.value = this._vol
+        this.gainNode.gain.value = this.handleVol()
       }
     }
     const event = new CustomEvent('track:mute', {
@@ -214,6 +224,15 @@ class TrackNode {
 
   public get url(): string {
     return this._url
+  }
+
+  private handleVol(): number {
+    const master: number = MixerAudio.normalizeFromContext(this._vol_master)
+    const trackVol: number = MixerAudio.normalizeFromContext(this._vol)
+    const vol = (master * trackVol) / 100
+    // if (!this.gainNode) return 0
+    // this.gainNode.gain.value = Number(vol)
+    return vol
   }
 }
 

@@ -1,5 +1,6 @@
 import { useAppContext } from 'App/app'
-import TrackNode from 'App/domain/mixer/node'
+import { MixerAudio } from 'App/domain/audio/audio_api'
+import MixerTimer from 'App/domain/mixer/timer'
 import { durationFormatter } from 'App/domain/time/time'
 import { useWindowSize } from 'App/hooks/useWindowSize'
 import { InfinityIcon } from 'App/ui/icons/infinity'
@@ -10,19 +11,22 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 import { PauseIco } from '../icons/pause'
 import TrackButton from './track_btn'
-import MixerTimer from 'App/domain/mixer/timer'
 
 interface Props {
   id: string
   url: string
   title: string
   nu: number
-  pan?: number
-  vol?: number
+  pan?: KnobPanRangeType
+  vol?: KnobVolRangeType
   mute?: boolean
   play?: boolean
   loop?: boolean
   duration: string
+  master: {
+    vol: KnobVolRangeType
+    mute: boolean
+  }
   OnPlay?: (e: any, id: string) => void
   OnPause?: (e: any, id: string) => void
   OnStop?: (e: any, id: string) => void
@@ -80,13 +84,16 @@ export default function Track(props: Props): JSX.Element {
     return playBtn
   }
 
-  function findTrackByDom(el: HTMLElement): TrackNode | null {
-    const parent = el.closest('.track')
-    if (!parent) return null
-    const id = parent.getAttribute('data-id')
-    if (!id) return null
-    return context.playlist.find(id)
-  }
+  const findTrackByDom = useCallback(
+    (el: HTMLElement) => {
+      const parent = el.closest('.track')
+      if (!parent) return null
+      const id = parent.getAttribute('data-id')
+      if (!id) return null
+      return context.playlist.find(id)
+    },
+    [context.playlist]
+  )
 
   function findTrackByEvent(e: any): HTMLElement | null {
     const tr = e.target.closest('.track')
@@ -94,13 +101,13 @@ export default function Track(props: Props): JSX.Element {
     return tr
   }
 
-  function findTrackIdByEvent(e: any): string {
+  const findTrackIdByEvent = useCallback((e: HTMLElement) => {
     const track = findTrackByEvent(e)
     if (!track) return ''
     const id = track.getAttribute('data-id')
     if (!id) return ''
     return id
-  }
+  }, [])
 
   useEffect(() => {
     document.addEventListener('track:stop', e => {
@@ -151,6 +158,7 @@ export default function Track(props: Props): JSX.Element {
       setPauseActive(true)
       setPauseVisible(true)
       if (!track) return
+      track.volMaster = context.playlist.vol
       if (track?.isPaused()) {
         e.stopPropagation()
         return
@@ -175,34 +183,58 @@ export default function Track(props: Props): JSX.Element {
     })
 
     document.addEventListener('track:mute', e => {})
-  }, [])
 
-  const onVolChange = useCallback((val: number, el: any) => {
-    const track = findTrackByDom(el)
-    if (!track) return
-    track.vol = val / 100
-  }, [])
+    document.addEventListener('master:vol', e => {
+      if (!trackDom.current) return
 
-  const onPanChange = useCallback((val: number, el: any) => {
-    const track = findTrackByDom(el)
-    if (!track) return
-    track.pan = val / 100
-  }, [])
+      const track = findTrackByDom(trackDom.current)
+      if (!track) return
+      track.volMaster = e.detail.value
+    })
+  }, [context.playlist, findTrackByDom, props])
 
-  const onStopClick = useCallback((e: any) => {
-    const id = findTrackIdByEvent(e)
-    if (props.OnStop) props.OnStop(e, id)
-  }, [])
+  const onVolChange = useCallback(
+    (val: number, el: any) => {
+      const track = findTrackByDom(el)
+      if (!track) return
+      track.volMaster = context.playlist.vol
+      track.vol = MixerAudio.normalizeFromVolUi(val)
+    },
+    [context.playlist.vol, findTrackByDom]
+  )
 
-  const onPauseClick = useCallback((e: any) => {
-    const id = findTrackIdByEvent(e)
-    if (props.OnPause) props.OnPause(e, id)
-  }, [])
+  const onPanChange = useCallback(
+    (val: number, el: any) => {
+      const track = findTrackByDom(el)
+      if (!track) return
+      track.pan = MixerAudio.normalizeFromPanUi(val)
+    },
+    [findTrackByDom]
+  )
 
-  const onPlayClick = useCallback((e: any) => {
-    const id = findTrackIdByEvent(e)
-    if (props.OnPlay) props.OnPlay(e, id)
-  }, [])
+  const onStopClick = useCallback(
+    (e: any) => {
+      const id = findTrackIdByEvent(e)
+      if (props.OnStop) props.OnStop(e, id)
+    },
+    [findTrackIdByEvent, props]
+  )
+
+  const onPauseClick = useCallback(
+    (e: any) => {
+      const id = findTrackIdByEvent(e)
+      if (props.OnPause) props.OnPause(e, id)
+    },
+    [findTrackIdByEvent, props]
+  )
+
+  const onPlayClick = useCallback(
+    (e: any) => {
+      const id = findTrackIdByEvent(e)
+      if (props.OnPlay) props.OnPlay(e, id)
+    },
+    [findTrackIdByEvent, props]
+  )
 
   const onLoopClick = useCallback(
     (e: any) => {
@@ -210,7 +242,7 @@ export default function Track(props: Props): JSX.Element {
       setLoopBtnActive(loopBtnActive => !loopBtnActive)
       if (props.OnLoop) props.OnLoop(e, id, !loopActive)
     },
-    [loopActive]
+    [findTrackIdByEvent, loopActive, props]
   )
 
   const onMuteClick = useCallback(
@@ -219,7 +251,7 @@ export default function Track(props: Props): JSX.Element {
       setMuteActive(muteActive => !muteActive)
       if (props.OnMute) props.OnMute(e, id, muteActive)
     },
-    [muteActive]
+    [findTrackIdByEvent, muteActive, props]
   )
 
   return (

@@ -1,8 +1,11 @@
-import { durationFormatter } from '../time/time'
-import TrackNode from './node'
+import TrackNode from 'App/domain/mixer/node'
+import { durationFormatter } from 'App/domain/time/time'
 
 class Playlist {
   private tracks: TrackNode[]
+  private vol_: VolumeType = '0.5'
+  private mute_: boolean = false
+
   constructor() {
     this.tracks = []
   }
@@ -55,6 +58,22 @@ class Playlist {
       const file = await item.loadFile()
       await item.decodeBuffer(file)
     })
+  }
+
+  public set vol(val: VolumeType) {
+    this.vol_ = val
+  }
+
+  public get vol(): VolumeType {
+    return this.vol_
+  }
+
+  public set mute(val: boolean) {
+    this.mute_ = val
+  }
+
+  public get mute(): boolean {
+    return this.mute_
   }
 }
 

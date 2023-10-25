@@ -1,18 +1,24 @@
 {
   "compilerOptions": {
+    "rootDir": "./",
     "baseUrl": "./",
-    "target": "es5",
+    "target": "es6",
     "lib": ["dom", "dom.iterable"],
     "allowJs": true,
     "skipLibCheck": false,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
+    "declaration": true,
     "esModuleInterop": true,
-    "module": "es6",
-    "moduleResolution": "node",
+    "module": "commonjs",
+    "moduleResolution": "Node",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "alwaysStrict": true,
+    "noImplicitAny": true,
     "jsx": "react",
     "incremental": true,
     "paths": {
@@ -21,6 +27,8 @@
       "Lib/*": ["./lib/*"]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx"],
+  "files": ["src/types/app.d.ts"],
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": [".yarn/cache", "node_modules"]
+  // "typeRoots": ["src/types/app.d.ts", "node_modules/@types"]
 }

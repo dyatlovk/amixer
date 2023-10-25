@@ -1,6 +1,5 @@
 import classNames from 'classnames'
 import React, {
-  FC,
   PropsWithChildren,
   ReactNode,
   useCallback,
@@ -11,7 +10,7 @@ import styled from 'styled-components'
 interface Props {
   active: boolean
   className?: string
-  OnClick: Function
+  OnClick: (e: any, state: boolean) => void
   title: string
   icon?: ReactNode
 }
@@ -27,7 +26,7 @@ const Button = (props: PropsWithChildren<Props>): JSX.Element => {
     <StyledButton
       className={classNames(props.className, 'button', { active: isActive })}
       onClick={e => {
-        props.OnClick(e)
+        props.OnClick(e, isActive)
         onClick(e)
       }}
     >
