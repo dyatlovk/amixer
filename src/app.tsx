@@ -1,5 +1,6 @@
 import TrackNode from 'App/domain/mixer/node'
 import { Playlist } from 'App/domain/mixer/playlist'
+import useThemeDetector, { Themes } from 'App/hooks/useTheme'
 import Button from 'App/ui/button'
 import { MixerIco } from 'App/ui/icons/mixer'
 import { PlayIco } from 'App/ui/icons/play'
@@ -54,6 +55,17 @@ export default function App(): JSX.Element {
   const [totalDuration, setTotalDuration] = useState<string>('')
   const [samplesLoaded, setSamplesLoaded] = useState<number>(0)
   const [maxSamples, setMaxSamples] = useState<number>(0)
+  const [theme, setTheme] = useState<Object>(dark)
+
+  const th = useThemeDetector()
+  useEffect(() => {
+    if (th === Themes.Dark) {
+      setTheme(dark)
+    }
+    if (th === Themes.Light) {
+      setTheme(scheme)
+    }
+  }, [th])
 
   // playlist loaded
   useEffect(() => {
@@ -98,7 +110,7 @@ export default function App(): JSX.Element {
   }, [])
 
   return (
-    <ThemeProvider theme={dark}>
+    <ThemeProvider theme={theme}>
       <GlobalStyles />
       <AppContext.Provider value={{ playlist: playlist }}>
         <StyledPage className="app">
