@@ -8,7 +8,7 @@ import Modal from 'App/ui/modal'
 import Notify from 'App/ui/notify'
 import Player from 'App/ui/player/player'
 import { GlobalStyles } from 'Styles/global'
-import { scheme } from 'Styles/theme'
+import { dark, scheme } from 'Styles/theme'
 import React, {
   createContext,
   useCallback,
@@ -98,7 +98,7 @@ export default function App(): JSX.Element {
   }, [])
 
   return (
-    <ThemeProvider theme={scheme}>
+    <ThemeProvider theme={dark}>
       <GlobalStyles />
       <AppContext.Provider value={{ playlist: playlist }}>
         <StyledPage className="app">
