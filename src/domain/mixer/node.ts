@@ -1,4 +1,5 @@
 import { MixerAudio } from '../audio/audio_api'
+import Analyser from './analyser'
 
 class TrackNode {
   private _vol: VolumeType = '0.0'
@@ -16,6 +17,7 @@ class TrackNode {
   private sourceNode?: AudioBufferSourceNode
   private gainNode?: GainNode
   private stereoPanNode?: StereoPannerNode
+  private analyserNode: Analyser
 
   /** track unique id */
   private _id: string
@@ -28,6 +30,7 @@ class TrackNode {
 
   constructor() {
     this.ctx = new AudioContext()
+    this.analyserNode = new Analyser(this.ctx)
     this._id = crypto.randomUUID()
   }
 
@@ -65,8 +68,10 @@ class TrackNode {
     this.gainNode.gain.value = this._mute ? 0 : Number(this._vol)
     this.stereoPanNode = this.ctx.createStereoPanner()
     this.stereoPanNode.pan.value = Number(this._pan)
+
     trackSource
       .connect(this.gainNode)
+      .connect(this.analyserNode.node)
       .connect(this.stereoPanNode)
       .connect(this.ctx.destination)
     trackSource.start(0, this._start)
@@ -84,6 +89,10 @@ class TrackNode {
     this._duration = audioBuffer.duration
     const event = new CustomEvent('track:ready', { detail: this })
     document.dispatchEvent(event)
+  }
+
+  public get analyser(): Analyser {
+    return this.analyserNode
   }
 
   public disconnect(): boolean {
