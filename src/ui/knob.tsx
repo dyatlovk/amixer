@@ -1,5 +1,5 @@
 import SvgKnob from 'Lib/svg-knob'
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import styled from 'styled-components'
 
 interface Props {
@@ -13,9 +13,13 @@ interface Props {
 
 const Knob = (props: Props): JSX.Element => {
   let el: HTMLDivElement | null = null
+  const isCalled = useRef(false)
 
   useEffect(() => {
-    const k = SvgKnob(el, {
+    if (isCalled.current) return
+    isCalled.current = true
+
+    SvgKnob(el, {
       initial_value: props.value,
       center_zero: props.split,
       value_min: props.split ? props.min : 0.0,
@@ -24,7 +28,7 @@ const Knob = (props: Props): JSX.Element => {
         if (props.OnChange) props.OnChange(e, el)
       },
     })
-  }, [])
+  }, [el, props])
 
   return (
     <StyledKnob className="knob">
