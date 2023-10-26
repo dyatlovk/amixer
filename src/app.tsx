@@ -55,21 +55,38 @@ export default function App(): JSX.Element {
   const [samplesLoaded, setSamplesLoaded] = useState<number>(0)
   const [maxSamples, setMaxSamples] = useState<number>(0)
 
+  // playlist loaded
   useEffect(() => {
-    document.addEventListener('playlist:loaded', e => {
+    const callback = (e: any) => {
       setTotalDuration(e.detail.duration)
       setNotifyVisible(false)
-    })
+    }
 
+    document.addEventListener('playlist:loaded', callback)
+
+    return () => {
+      document.removeEventListener('playlist:loaded', callback)
+    }
+  }, [])
+
+  // track ready
+  useEffect(() => {
     let samples = 0
-    document.addEventListener('track:ready', e => {
+    const callback = (e: any) => {
       samples++
       setSamplesLoaded(samples)
-    })
+    }
+
+    document.addEventListener('track:ready', callback)
 
     setMaxSamples(playlist.count())
 
     playlist.preloadTracks()
+
+    return () => {
+      document.removeEventListener('track:ready', callback)
+      samples = 0
+    }
   }, [])
 
   const onMixerClick = useCallback((e: any) => {

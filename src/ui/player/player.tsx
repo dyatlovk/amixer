@@ -24,13 +24,14 @@ const Player = (props: Props): JSX.Element => {
     tracks.map((track: TrackNode, i: number) => {
       const analyser = track.analyser
       const len = analyser.bufferLen
-      setInterval(() => {
+      const tick = setInterval(() => {
         analyser.update()
         for (let i = 0; i < len; i++) {
           const v = analyser.data[i] - 100
           setProgress(v * 2)
         }
       }, 100)
+      return () => clearInterval(tick)
     })
   }, [context.playlist])
 

@@ -109,8 +109,9 @@ export default function Track(props: Props): JSX.Element {
     return id
   }, [])
 
+  // track stop
   useEffect(() => {
-    document.addEventListener('track:stop', e => {
+    const callback = (e: any) => {
       const id = e.detail.id
       if (props.id !== id) return
       const track = context.playlist.find(id)
@@ -126,9 +127,14 @@ export default function Track(props: Props): JSX.Element {
       }
       setTimerFrame(timer.stop())
       setTimerFrame(timer.frame)
-    })
+    }
+    document.addEventListener('track:stop', callback)
+    return () => document.removeEventListener('track:stop', callback)
+  }, [context.playlist, props.id])
 
-    document.addEventListener('track:end', e => {
+  // track end
+  useEffect(() => {
+    const callback = (e: any) => {
       const id = e.detail.id
       if (props.id !== id) return
       const track = context.playlist.find(id)
@@ -146,9 +152,15 @@ export default function Track(props: Props): JSX.Element {
       }
 
       if (props.OnEnd) props.OnEnd(playBtn)
-    })
+    }
+    document.addEventListener('track:end', callback)
 
-    document.addEventListener('track:play', e => {
+    return () => document.removeEventListener('track:end', callback)
+  }, [context.playlist, props])
+
+  // track play
+  useEffect(() => {
+    const callback = (e: any) => {
       const id = e.detail.id
       if (props.id !== id) return
       const track = context.playlist.find(id)
@@ -171,27 +183,50 @@ export default function Track(props: Props): JSX.Element {
         }
         setTimerFrame(timer.frame)
       })
-    })
+    }
+    document.addEventListener('track:play', callback)
+    return () => document.removeEventListener('track:play', callback)
+  }, [context.playlist, props.id])
 
-    document.addEventListener('track:pause', e => {
+  // track pause
+  useEffect(() => {
+    const callback = (e: any) => {
       setPlayActive(true)
       setPlayVisible(true)
       setStopActive(true)
       setPauseActive(false)
       setPauseVisible(false)
       setTimerFrame(timer.pause())
-    })
+    }
 
-    document.addEventListener('track:mute', e => {})
+    document.addEventListener('track:pause', callback)
 
-    document.addEventListener('master:vol', e => {
+    return () => removeEventListener('track:pause', callback)
+  }, [])
+
+  // track mute
+  useEffect(() => {
+    const callback = (e: any) => {}
+
+    document.addEventListener('track:mute', callback)
+    return () => document.removeEventListener('track:mute', callback)
+  }, [])
+
+  // master vol
+  useEffect(() => {
+    const callback = (e: any) => {
       if (!trackDom.current) return
 
       const track = findTrackByDom(trackDom.current)
       if (!track) return
       track.volMaster = e.detail.value
-    })
-  }, [context.playlist, findTrackByDom, props])
+    }
+
+    document.addEventListener('master:vol', callback)
+    return () => {
+      document.removeEventListener('master:vol', callback)
+    }
+  }, [findTrackByDom])
 
   const onVolChange = useCallback(
     (val: number, el: any) => {

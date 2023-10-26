@@ -27,8 +27,7 @@
       "Lib/*": ["./lib/*"]
     }
   },
-  "files": ["src/types/app.d.ts"],
+  "files": ["src/types/app.d.ts", "src/types/dom.d.ts"],
   "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": [".yarn/cache", "node_modules"]
-  // "typeRoots": ["src/types/app.d.ts", "node_modules/@types"]
 }
