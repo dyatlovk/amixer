@@ -1,5 +1,7 @@
 {
   "name": "amixer.js",
+  "homepage": "https://github.com/dyatlovk/amixer",
+  "version": "0.1.0",
   "devDependencies": {
     "@babel/core": "^7.23.2",
     "@babel/preset-env": "^7.23.2",
@@ -42,12 +44,17 @@
     "build": "webpack --mode=development",
     "prod": "webpack --mode=production",
     "dev": "webpack --watch --progress --mode=development",
-    "test": "jest"
+    "test": "jest",
+    "predeploy": "yarn prod",
+    "deploy": "gh-pages -d build"
   },
   "packageManager": "yarn@3.6.4",
   "browserslist": [
     "last 1 version",
     "> 1%",
     "not dead"
-  ]
+  ],
+  "dependencies": {
+    "gh-pages": "^6.0.0"
+  }
 }
