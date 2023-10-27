@@ -15,6 +15,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from 'react'
 import styled, { ThemeProvider } from 'styled-components'
@@ -56,6 +57,8 @@ export default function App(): JSX.Element {
   const [samplesLoaded, setSamplesLoaded] = useState<number>(0)
   const [maxSamples, setMaxSamples] = useState<number>(0)
   const [theme, setTheme] = useState<Object>(dark)
+  const isTrackReadyCalled = useRef(false)
+  const isPlaylistCalled = useRef(false)
 
   const th = useThemeDetector()
   useEffect(() => {
@@ -70,19 +73,22 @@ export default function App(): JSX.Element {
   // playlist loaded
   useEffect(() => {
     const callback = (e: any) => {
+      if (isPlaylistCalled.current) return
+      isPlaylistCalled.current = true
       setTotalDuration(e.detail.duration)
       setNotifyVisible(false)
     }
 
     document.addEventListener('playlist:loaded', callback)
 
-    return () => {
-      document.removeEventListener('playlist:loaded', callback)
-    }
+    return () => document.removeEventListener('playlist:loaded', callback)
   }, [])
 
   // track ready
   useEffect(() => {
+    if (isTrackReadyCalled.current) return
+    isTrackReadyCalled.current = true
+
     let samples = 0
     const callback = (e: any) => {
       samples++
