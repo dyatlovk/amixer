@@ -60,6 +60,16 @@ class Playlist {
     })
   }
 
+  /**
+   * Check all tracks in playlist are not playing
+   */
+  public isIdle(): boolean {
+    const stopped = this.tracks.filter((item, id) => {
+      return !item.isPlay()
+    })
+    return stopped.length === this.count()
+  }
+
   public set vol(val: VolumeType) {
     this.vol_ = val
   }

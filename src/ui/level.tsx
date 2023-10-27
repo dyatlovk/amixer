@@ -24,7 +24,7 @@ const Level = (props: Props): JSX.Element => {
         <div
           key={x}
           data-id={x}
-          className={classNames('level_unit', { active: activeUnits >= x })}
+          className={classNames('level_unit', { active: activeUnits > x })}
         ></div>
       ))}
     </LevelStyles>

@@ -25,6 +25,11 @@ const Player = (props: Props): JSX.Element => {
       const analyser = track.analyser
       const len = analyser.bufferLen
       const tick = setInterval(() => {
+        const isIdle = context.playlist.isIdle()
+        if (isIdle) {
+          setProgress(0)
+          return
+        }
         analyser.update()
         for (let i = 0; i < len; i++) {
           const v = analyser.data[i] - 100
