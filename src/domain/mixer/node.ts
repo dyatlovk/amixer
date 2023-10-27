@@ -1,5 +1,6 @@
 import { MixerAudio } from '../audio/audio_api'
 import Analyser from './analyser'
+import AudioCtx from './context'
 
 class TrackNode {
   private _vol: VolumeType = '0.0'
@@ -12,12 +13,12 @@ class TrackNode {
   private _pause: boolean = false
   private _url: string = ''
 
-  private ctx: AudioContext
+  private ctx?: AudioContext
   private audioBuffer?: AudioBuffer
   private sourceNode?: AudioBufferSourceNode
   private gainNode?: GainNode
   private stereoPanNode?: StereoPannerNode
-  private analyserNode: Analyser
+  private analyserNode?: Analyser
 
   /** track unique id */
   private _id: string
@@ -29,8 +30,6 @@ class TrackNode {
   private _start: number = 0
 
   constructor() {
-    this.ctx = new AudioContext()
-    this.analyserNode = new Analyser(this.ctx)
     this._id = crypto.randomUUID()
   }
 
@@ -44,6 +43,12 @@ class TrackNode {
 
   public play(): void {
     this._pause = false
+    if (!this.ctx) {
+      this.ctx = this.makeContext()
+    }
+    if (!this.analyserNode) {
+      this.analyserNode = this.makeAnalyser()
+    }
     if (this._play) {
       const startEvent = new CustomEvent('track:play', {
         detail: { id: this._id },
@@ -84,6 +89,9 @@ class TrackNode {
 
   public async decodeBuffer(buffer: ArrayBuffer): Promise<void> {
     // this.ctx = new AudioContext()
+    if (!this.ctx) {
+      this.ctx = this.makeContext()
+    }
     const audioBuffer: AudioBuffer = await this.ctx.decodeAudioData(buffer)
     this.audioBuffer = audioBuffer
     this._duration = audioBuffer.duration
@@ -92,6 +100,9 @@ class TrackNode {
   }
 
   public get analyser(): Analyser {
+    if (!this.analyserNode) {
+      this.analyserNode = this.makeAnalyser()
+    }
     return this.analyserNode
   }
 
@@ -111,6 +122,9 @@ class TrackNode {
   }
 
   public pause(val: boolean) {
+    if (!this.ctx) {
+      this.ctx = this.makeContext()
+    }
     if (val) {
       this._play = false
       this.sourceNode?.stop()
@@ -239,9 +253,19 @@ class TrackNode {
     const master: number = MixerAudio.normalizeFromContext(this._vol_master)
     const trackVol: number = MixerAudio.normalizeFromContext(this._vol)
     const vol = (master * trackVol) / 100
-    // if (!this.gainNode) return 0
-    // this.gainNode.gain.value = Number(vol)
     return vol
+  }
+
+  private makeContext(): AudioContext {
+    const c = new AudioCtx()
+    return c.ctx
+  }
+
+  private makeAnalyser(): Analyser {
+    if (!this.ctx) {
+      this.ctx = this.makeContext()
+    }
+    return new Analyser(this.ctx)
   }
 }
 

@@ -1,5 +1,5 @@
 import { describe, expect, test } from '@jest/globals'
-import { durationFormatter } from '../../../src/domain/time/time'
+import { durationFormatter } from 'App/domain/time/time'
 
 describe('time', () => {
   test('is 0', () => {

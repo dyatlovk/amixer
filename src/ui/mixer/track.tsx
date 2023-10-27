@@ -49,6 +49,7 @@ export default function Track(props: Props): JSX.Element {
   const [timerFrame, setTimerFrame] = useState<number>(0)
   const [context, setContext] = useState(useAppContext())
   const trackDom = useRef(null)
+  const isTrackPauseCalled = useRef(false)
   const [stopActive, setStopActive] = useState<boolean>(
     props.play ? props.play : Default.play
   )
@@ -190,7 +191,11 @@ export default function Track(props: Props): JSX.Element {
 
   // track pause
   useEffect(() => {
+    if (isTrackPauseCalled.current) return
+    isTrackPauseCalled.current = true
     const callback = (e: any) => {
+      const id = e.detail.id
+      if (props.id !== id) return
       setPlayActive(true)
       setPlayVisible(true)
       setStopActive(true)
@@ -202,15 +207,18 @@ export default function Track(props: Props): JSX.Element {
     document.addEventListener('track:pause', callback)
 
     return () => removeEventListener('track:pause', callback)
-  }, [])
+  }, [props.id])
 
   // track mute
   useEffect(() => {
-    const callback = (e: any) => {}
+    const callback = (e: any) => {
+      const id = e.detail.id
+      if (props.id !== id) return
+    }
 
     document.addEventListener('track:mute', callback)
     return () => document.removeEventListener('track:mute', callback)
-  }, [])
+  }, [props.id])
 
   // master vol
   useEffect(() => {
@@ -223,9 +231,7 @@ export default function Track(props: Props): JSX.Element {
     }
 
     document.addEventListener('master:vol', callback)
-    return () => {
-      document.removeEventListener('master:vol', callback)
-    }
+    return () => document.removeEventListener('master:vol', callback)
   }, [findTrackByDom])
 
   const onVolChange = useCallback(
@@ -250,6 +256,7 @@ export default function Track(props: Props): JSX.Element {
   const onStopClick = useCallback(
     (e: any) => {
       const id = findTrackIdByEvent(e)
+      if (props.id !== id) return
       if (props.OnStop) props.OnStop(e, id)
     },
     [findTrackIdByEvent, props]
@@ -258,6 +265,7 @@ export default function Track(props: Props): JSX.Element {
   const onPauseClick = useCallback(
     (e: any) => {
       const id = findTrackIdByEvent(e)
+      if (props.id !== id) return
       if (props.OnPause) props.OnPause(e, id)
     },
     [findTrackIdByEvent, props]
@@ -266,6 +274,7 @@ export default function Track(props: Props): JSX.Element {
   const onPlayClick = useCallback(
     (e: any) => {
       const id = findTrackIdByEvent(e)
+      if (props.id !== id) return
       if (props.OnPlay) props.OnPlay(e, id)
     },
     [findTrackIdByEvent, props]
@@ -274,6 +283,7 @@ export default function Track(props: Props): JSX.Element {
   const onLoopClick = useCallback(
     (e: any) => {
       const id = findTrackIdByEvent(e)
+      if (props.id !== id) return
       setLoopBtnActive(loopBtnActive => !loopBtnActive)
       if (props.OnLoop) props.OnLoop(e, id, !loopActive)
     },
@@ -283,6 +293,7 @@ export default function Track(props: Props): JSX.Element {
   const onMuteClick = useCallback(
     (e: any) => {
       const id = findTrackIdByEvent(e)
+      if (props.id !== id) return
       setMuteActive(muteActive => !muteActive)
       if (props.OnMute) props.OnMute(e, id, muteActive)
     },

@@ -3,7 +3,7 @@ import { durationFormatter } from 'App/domain/time/time'
 
 class Playlist {
   private tracks: TrackNode[]
-  private vol_: VolumeType = '0.5'
+  private vol_: VolumeType = '0.1'
   private mute_: boolean = false
 
   constructor() {
@@ -14,7 +14,9 @@ class Playlist {
     this.tracks.push(track)
   }
 
-  public remove(track: TrackNode): void {}
+  public remove(track: TrackNode): void {
+    this.tracks = this.tracks.filter(item => item.id !== track.id)
+  }
 
   public clear(): void {
     this.tracks = []

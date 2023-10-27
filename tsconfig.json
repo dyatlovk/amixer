@@ -24,10 +24,11 @@
     "paths": {
       "Styles/*": ["./styles/*"],
       "App/*": ["./src/*"],
-      "Lib/*": ["./lib/*"]
+      "Lib/*": ["./lib/*"],
+      "Test/*": ["./test/*"]
     }
   },
   "files": ["src/types/app.d.ts", "src/types/dom.d.ts"],
-  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "test/**/*.ts"],
   "exclude": [".yarn/cache", "node_modules"]
 }

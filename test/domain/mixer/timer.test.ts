@@ -1,5 +1,5 @@
 import { describe, expect, jest, test } from '@jest/globals'
-import MixerTimer from '../../../src/domain/mixer/timer'
+import MixerTimer from 'App/domain/mixer/timer'
 
 jest.useFakeTimers()
 jest.spyOn(global, 'setInterval')
