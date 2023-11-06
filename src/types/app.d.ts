@@ -16,3 +16,13 @@ declare type VolumeType = strFloatRange
 declare type PanType = strFloatRangePan
 declare type KnobVolRangeType = knobVolRange
 declare type KnobPanRangeType = knobPanRange
+
+declare interface MasterVol {
+  value: VolumeType
+  node: HTMLElement
+}
+
+declare interface TrackPlay {
+  id: string
+  unpause: boolean
+}

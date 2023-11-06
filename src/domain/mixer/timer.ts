@@ -17,6 +17,11 @@ class MixerTimer {
     return this.timer_
   }
 
+  public resume(): number {
+    this.paused_ = false
+    return this.timer_
+  }
+
   public stop(): number {
     this.started_ = false
     this.paused_ = false

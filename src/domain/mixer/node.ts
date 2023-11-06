@@ -1,6 +1,7 @@
 import { MixerAudio } from '../audio/audio_api'
 import Analyser from './analyser'
 import AudioCtx from './context'
+import MixerTimer from './timer'
 
 class TrackNode {
   private _vol: VolumeType = '0.0'
@@ -26,11 +27,11 @@ class TrackNode {
   /** track duration */
   private _duration: number = 0
 
-  /** start from */
-  private _start: number = 0
+  private _timer: MixerTimer
 
   constructor() {
     this._id = crypto.randomUUID()
+    this._timer = new MixerTimer()
   }
 
   public async loadFile(): Promise<ArrayBuffer> {
@@ -41,54 +42,24 @@ class TrackNode {
     return buffer
   }
 
-  public play(): void {
-    this._pause = false
+  public start(): void {
     if (!this.ctx) {
       this.ctx = this.makeContext()
     }
-    if (!this.analyserNode) {
-      this.analyserNode = this.makeAnalyser()
-    }
-    if (this._play) {
-      const startEvent = new CustomEvent('track:play', {
-        detail: { id: this._id },
-      })
-      document.dispatchEvent(startEvent)
-      return
-    }
-    const trackSource = new AudioBufferSourceNode(this.ctx, {
-      buffer: this.audioBuffer,
-    })
-    this.sourceNode = trackSource
 
-    this.sourceNode.onended = () => {
-      const endEvent = new CustomEvent('track:end', {
-        detail: { id: this._id },
-      })
-      document.dispatchEvent(endEvent)
-    }
-
-    this.gainNode = this.ctx.createGain()
-    this.gainNode.connect(this.ctx.destination)
-    this.gainNode.gain.value = this._mute ? 0 : Number(this._vol)
-    this.stereoPanNode = this.ctx.createStereoPanner()
-    this.stereoPanNode.pan.value = Number(this._pan)
-
-    trackSource
-      .connect(this.gainNode)
-      .connect(this.analyserNode.node)
-      .connect(this.stereoPanNode)
-      .connect(this.ctx.destination)
-    trackSource.start(0, this._start)
+    this.sourceNode = this.registerNode()
+    this.sourceNode.start(0)
+    this._timer.start()
     const startEvent = new CustomEvent('track:play', {
-      detail: { id: this._id },
+      detail: { id: this._id, unpause: false },
     })
+
     document.dispatchEvent(startEvent)
+    this.ctx.resume()
     this._play = true
   }
 
   public async decodeBuffer(buffer: ArrayBuffer): Promise<void> {
-    // this.ctx = new AudioContext()
     if (!this.ctx) {
       this.ctx = this.makeContext()
     }
@@ -97,6 +68,32 @@ class TrackNode {
     this._duration = audioBuffer.duration
     const event = new CustomEvent('track:ready', { detail: this })
     document.dispatchEvent(event)
+  }
+
+  public registerNode(): AudioBufferSourceNode {
+    if (!this.ctx) {
+      this.ctx = this.makeContext()
+    }
+    if (!this.analyserNode) {
+      this.analyserNode = this.makeAnalyser()
+    }
+    const trackSource = new AudioBufferSourceNode(this.ctx, {
+      buffer: this.audioBuffer,
+    })
+
+    this.gainNode = this.ctx.createGain()
+    this.gainNode.connect(this.ctx.destination)
+    this.gainNode.gain.value = this._mute ? 0 : this.volInt
+    this.stereoPanNode = this.ctx.createStereoPanner()
+    this.stereoPanNode.pan.value = Number(this._pan)
+
+    trackSource
+      .connect(this.gainNode)
+      .connect(this.analyserNode.node)
+      .connect(this.stereoPanNode)
+      .connect(this.ctx.destination)
+
+    return trackSource
   }
 
   public get analyser(): Analyser {
@@ -121,25 +118,26 @@ class TrackNode {
     return this._duration
   }
 
-  public pause(val: boolean) {
+  public pause(val: boolean): void {
     if (!this.ctx) {
       this.ctx = this.makeContext()
     }
-    if (val) {
+    if (val === true) {
       this._play = false
-      this.sourceNode?.stop()
-      this._start = this.ctx.currentTime
+      this.ctx.suspend()
+      this._timer.pause()
       const event = new CustomEvent('track:pause', {
         detail: { id: this._id, state: val },
       })
       document.dispatchEvent(event)
     }
 
-    if (!val) {
+    if (val === false) {
       this._play = true
-      this.sourceNode?.start(0, this._start)
+      this.ctx.resume()
+      this._timer.resume()
       const event = new CustomEvent('track:play', {
-        detail: { id: this._id, state: val },
+        detail: { id: this._id, unpause: true },
       })
       document.dispatchEvent(event)
     }
@@ -151,11 +149,16 @@ class TrackNode {
     return this._pause
   }
 
+  public isStop(): boolean {
+    return !this._pause && !this._play
+  }
+
   public stop(): void {
-    this.sourceNode?.stop()
-    this._start = 0
     this._play = false
     this._pause = false
+    this.ctx?.suspend()
+    this.sourceNode?.stop()
+    this._timer.stop()
     const endEvent = new CustomEvent('track:stop', {
       detail: { id: this._id },
     })
@@ -174,6 +177,10 @@ class TrackNode {
 
   public get vol(): VolumeType {
     return this._vol
+  }
+
+  public get volInt(): number {
+    return this.handleVol()
   }
 
   public set volMaster(val: VolumeType) {
@@ -247,6 +254,26 @@ class TrackNode {
 
   public get url(): string {
     return this._url
+  }
+
+  public get time(): number {
+    if (!this.ctx) {
+      return 0
+    }
+    return this._timer.frame
+  }
+
+  public get source(): AudioBufferSourceNode | null {
+    if (!this.sourceNode) return null
+    return this.sourceNode
+  }
+
+  private OnEndCallback(e: any, context: this): void {
+    const endEvent = new CustomEvent('track:end', {
+      detail: { id: context._id },
+    })
+    document.dispatchEvent(endEvent)
+    this.stop()
   }
 
   private handleVol(): number {

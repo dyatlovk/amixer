@@ -1,6 +1,5 @@
 import { useAppContext } from 'App/app'
 import { MixerAudio } from 'App/domain/audio/audio_api'
-import MixerTimer from 'App/domain/mixer/timer'
 import { durationFormatter } from 'App/domain/time/time'
 import { useWindowSize } from 'App/hooks/useWindowSize'
 import { InfinityIcon } from 'App/ui/icons/infinity'
@@ -43,13 +42,11 @@ const Default = {
   loop: false,
 }
 
-const timer = new MixerTimer()
-
 export default function Track(props: Props): JSX.Element {
   const [timerFrame, setTimerFrame] = useState<number>(0)
   const [context, setContext] = useState(useAppContext())
   const trackDom = useRef(null)
-  const isTrackPauseCalled = useRef(false)
+  const isStarted = useRef<boolean>(false)
   const [stopActive, setStopActive] = useState<boolean>(
     props.play ? props.play : Default.play
   )
@@ -75,15 +72,9 @@ export default function Track(props: Props): JSX.Element {
   const [muteActive, setMuteActive] = useState<boolean>(
     props.mute ? !props.mute : !Default.mute
   )
+  const [timerLoop, setTimerLoop] = useState<NodeJS.Timeout>()
 
   const ws = useWindowSize()
-
-  function findPlayButton(): Element | null {
-    if (!trackDom.current) return null
-    const dom = trackDom.current as HTMLDivElement
-    const playBtn = dom.getElementsByClassName('track_play')[0]
-    return playBtn
-  }
 
   const findTrackByDom = useCallback(
     (el: HTMLElement) => {
@@ -110,129 +101,24 @@ export default function Track(props: Props): JSX.Element {
     return id
   }, [])
 
-  // track stop
-  useEffect(() => {
-    const callback = (e: any) => {
-      const id = e.detail.id
-      if (props.id !== id) return
-      const track = context.playlist.find(id)
-      setPlayActive(false)
-      setPlayVisible(true)
-      setStopActive(true)
-      setPauseActive(false)
-      setPauseVisible(false)
-      if (!track) return
-      if (track?.isPaused()) {
-        e.stopPropagation()
-        return
-      }
-      setTimerFrame(timer.stop())
-      setTimerFrame(timer.frame)
-    }
-    document.addEventListener('track:stop', callback)
-    return () => document.removeEventListener('track:stop', callback)
-  }, [context.playlist, props.id])
-
-  // track end
-  useEffect(() => {
-    const callback = (e: any) => {
-      const id = e.detail.id
-      if (props.id !== id) return
-      const track = context.playlist.find(id)
-      const playBtn = findPlayButton()
-      if (track?.isPaused()) {
-        e.preventDefault()
-        e.stopImmediatePropagation()
-        return
-      }
-      if (!track?.isLooped()) {
-        track?.stop()
-      } else {
-        timer.reset()
-        setTimerFrame(0)
-      }
-
-      if (props.OnEnd) props.OnEnd(playBtn)
-    }
-    document.addEventListener('track:end', callback)
-
-    return () => document.removeEventListener('track:end', callback)
-  }, [context.playlist, props])
-
-  // track play
-  useEffect(() => {
-    const callback = (e: any) => {
-      const id = e.detail.id
-      if (props.id !== id) return
-      const track = context.playlist.find(id)
-      setPlayActive(false)
-      setPlayVisible(false)
-      setStopActive(true)
-      setPauseActive(true)
-      setPauseVisible(true)
-      if (!track) return
-      track.volMaster = context.playlist.vol
-      if (track?.isPaused()) {
-        e.stopPropagation()
-        return
-      }
-
-      timer.start(() => {
-        if (timer.frame >= track.duration) {
-          timer.reset()
-          setTimerFrame(0)
-        }
-        setTimerFrame(timer.frame)
-      })
-    }
-    document.addEventListener('track:play', callback)
-    return () => document.removeEventListener('track:play', callback)
-  }, [context.playlist, props.id])
-
-  // track pause
-  useEffect(() => {
-    if (isTrackPauseCalled.current) return
-    isTrackPauseCalled.current = true
-    const callback = (e: any) => {
-      const id = e.detail.id
-      if (props.id !== id) return
-      setPlayActive(true)
-      setPlayVisible(true)
-      setStopActive(true)
-      setPauseActive(false)
-      setPauseVisible(false)
-      setTimerFrame(timer.pause())
-    }
-
-    document.addEventListener('track:pause', callback)
-
-    return () => removeEventListener('track:pause', callback)
-  }, [props.id])
-
-  // track mute
-  useEffect(() => {
-    const callback = (e: any) => {
-      const id = e.detail.id
-      if (props.id !== id) return
-    }
-
-    document.addEventListener('track:mute', callback)
-    return () => document.removeEventListener('track:mute', callback)
-  }, [props.id])
-
-  // master vol
-  useEffect(() => {
-    const callback = (e: any) => {
+  const onEndCallback = useCallback(
+    (e: any) => {
       if (!trackDom.current) return
-
       const track = findTrackByDom(trackDom.current)
       if (!track) return
-      track.volMaster = e.detail.value
-    }
-
-    document.addEventListener('master:vol', callback)
-    return () => document.removeEventListener('master:vol', callback)
-  }, [findTrackByDom])
+      if (props.id !== track.id) return
+      setPlayActive(false)
+      setPlayVisible(true)
+      setStopActive(true)
+      setPauseActive(false)
+      setPauseVisible(false)
+      clearInterval(timerLoop)
+      setTimerFrame(0)
+      track.stop()
+      isStarted.current = false
+    },
+    [findTrackByDom, props.id, timerLoop]
+  )
 
   const onVolChange = useCallback(
     (val: number, el: any) => {
@@ -257,27 +143,65 @@ export default function Track(props: Props): JSX.Element {
     (e: any) => {
       const id = findTrackIdByEvent(e)
       if (props.id !== id) return
-      if (props.OnStop) props.OnStop(e, id)
+      const track = context.playlist.find(id)
+      if (!track) return
+      setPlayActive(false)
+      setPlayVisible(true)
+      setStopActive(true)
+      setPauseActive(false)
+      setPauseVisible(false)
+      clearInterval(timerLoop)
+      setTimerFrame(0)
+      track.source?.removeEventListener('ended', onEndCallback)
+      track.stop()
+      isStarted.current = false
+      // if (props.OnStop) props.OnStop(e, id)
     },
-    [findTrackIdByEvent, props]
+    [context.playlist, findTrackIdByEvent, onEndCallback, props.id, timerLoop]
   )
 
   const onPauseClick = useCallback(
     (e: any) => {
       const id = findTrackIdByEvent(e)
       if (props.id !== id) return
-      if (props.OnPause) props.OnPause(e, id)
+      const track = context.playlist.find(id)
+      if (!track) return
+      setPlayActive(true)
+      setPlayVisible(true)
+      setStopActive(true)
+      setPauseActive(false)
+      setPauseVisible(false)
+      track.pause(true)
+      // if (props.OnPause) props.OnPause(e, id)
     },
-    [findTrackIdByEvent, props]
+    [context.playlist, findTrackIdByEvent, props]
   )
 
   const onPlayClick = useCallback(
     (e: any) => {
       const id = findTrackIdByEvent(e)
       if (props.id !== id) return
-      if (props.OnPlay) props.OnPlay(e, id)
+      const track = context.playlist.find(id)
+      if (!track) return
+      setPauseActive(true)
+      setPauseVisible(true)
+      setPlayActive(false)
+      setPlayVisible(false)
+      setStopActive(true)
+      const loop = setInterval(() => {
+        setTimerFrame(track.time)
+      }, 500)
+      setTimerLoop(loop)
+      if (!isStarted.current) {
+        track.start()
+        track.source?.addEventListener('ended', onEndCallback)
+        isStarted.current = true
+      } else {
+        track.pause(false)
+      }
+      // if (props.OnPlay) props.OnPlay(e, id)
     },
-    [findTrackIdByEvent, props]
+    [context.playlist, findTrackIdByEvent, onEndCallback, props.id]
   )
 
   const onLoopClick = useCallback(
@@ -295,10 +219,25 @@ export default function Track(props: Props): JSX.Element {
       const id = findTrackIdByEvent(e)
       if (props.id !== id) return
       setMuteActive(muteActive => !muteActive)
+      setStopActive(true)
       if (props.OnMute) props.OnMute(e, id, muteActive)
     },
     [findTrackIdByEvent, muteActive, props]
   )
+
+  // master vol
+  useEffect(() => {
+    const callback = (e: any) => {
+      if (!trackDom.current) return
+
+      const track = findTrackByDom(trackDom.current)
+      if (!track) return
+      track.volMaster = e.detail.value
+    }
+
+    document.addEventListener('master:vol', callback)
+    return () => document.removeEventListener('master:vol', callback)
+  }, [findTrackByDom])
 
   return (
     <StyledTrack className="track" data-id={props.id} ref={trackDom}>

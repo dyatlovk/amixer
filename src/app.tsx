@@ -86,9 +86,6 @@ export default function App(): JSX.Element {
 
   // track ready
   useEffect(() => {
-    if (isTrackReadyCalled.current) return
-    isTrackReadyCalled.current = true
-
     let samples = 0
     const callback = (e: any) => {
       samples++

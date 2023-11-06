@@ -59,6 +59,7 @@ class Playlist {
     this.tracks.map(async (item, id) => {
       const file = await item.loadFile()
       await item.decodeBuffer(file)
+      item.volMaster = this.vol_
     })
   }
 

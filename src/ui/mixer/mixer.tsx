@@ -17,7 +17,13 @@ const Mixer = (props: Props): JSX.Element => {
     async (e: any, id: string) => {
       const track = context.playlist.find(id)
       if (!track) return
-      track.play()
+      const masterVol = context.playlist.vol as VolumeType
+      track.volMaster = masterVol
+      if (track.isPaused()) {
+        track.pause(false)
+        return
+      }
+      track.start()
     },
     [context.playlist]
   )

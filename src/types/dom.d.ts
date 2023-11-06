@@ -1,12 +1,7 @@
-declare interface MasterVol {
-  value: VolumeType
-  node: HTMLElement
-}
-
 declare interface EventMap {
   'track:loaded': CustomEvent
   'track:ready': CustomEvent
-  'track:play': CustomEvent
+  'track:play': CustomEvent<TrackPlay>
   'track:stop': CustomEvent
   'track:pause': CustomEvent
   'track:end': CustomEvent
