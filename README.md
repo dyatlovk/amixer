@@ -18,3 +18,9 @@ https://dyatlovk.github.io/amixer/
 # Testing
 
 <code>yarn test</code>
+
+# Deploy (gp)
+Production build
+<code>yarn predeploy</code>
+Deploy to github pages
+<code>yarn deploy</code>
