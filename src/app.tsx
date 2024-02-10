@@ -29,20 +29,20 @@ const playlist = new Playlist()
 const track = new TrackNode()
 track.vol = '0.1'
 track.pan = '0.2'
-track.url = 'https://freesound.org/data/previews/28/28239_129090-lq.mp3'
+track.url = 'birds.mp3'
 track.title = 'Birds'
 playlist.add(track)
 
 const track2 = new TrackNode()
 track2.vol = '0.1'
-track2.url = 'https://freesound.org/data/previews/401/401978_7459817-lq.mp3'
+track2.url = 'ambient.mp3'
 track2.title = 'Ambient'
 playlist.add(track2)
 
 const track3 = new TrackNode()
 track3.vol = '0.1'
 track3.pan = '-0.1'
-track3.url = 'https://freesound.org/data/previews/234/234914_7037-lq.mp3'
+track3.url = 'trees.mp3'
 track3.title = 'Wind trees'
 playlist.add(track3)
 
