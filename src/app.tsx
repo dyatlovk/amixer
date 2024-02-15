@@ -51,7 +51,7 @@ const AppContext = createContext<AppState>({
 })
 
 export default function App(): JSX.Element {
-  const [state, setState] = useState<States>(States.Player)
+  const [state, setState] = useState<States>(States.Mixer)
   const [notifyVisible, setNotifyVisible] = useState<boolean>(true)
   const [totalDuration, setTotalDuration] = useState<string>('')
   const [samplesLoaded, setSamplesLoaded] = useState<number>(0)
